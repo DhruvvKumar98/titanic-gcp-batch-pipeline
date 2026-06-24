@@ -22,7 +22,7 @@ default_args = {
     'retries': 1,
     'retry_delay': timedelta(seconds=50),
     'dataflow_default_options': {
-        'project': 'noble-airport-412610',
+        'project': os.environ.get('GCP_PROJECT_ID', 'your-project-id'),
         'region': 'us-central1',
         'runner': 'DataflowRunner'
     }
@@ -49,7 +49,7 @@ start = DummyOperator(
 
 read_csv_file = GCSToBigQueryOperator(
     task_id='read_csv_file',
-    bucket='degauravbk',
+    bucket=os.environ.get('GCS_BUCKET', 'your-gcs-bucket'),
     source_objects=['titanic_dataset.csv'],
     destination_project_dataset_table=f'{PROJECT_ID}:{STAGING_DATASET}.titanic_data',
     write_disposition='WRITE_TRUNCATE',
@@ -144,12 +144,12 @@ statistics_task = PythonOperator(
 # Task for data visualization
 visualization_query_task = BigQueryExecuteQueryOperator(
     task_id='visualization_query_task',
-    sql='''WITH PassengerCounts AS (
+    sql=f'''WITH PassengerCounts AS (
           SELECT
             Gender,
             COUNT(*) AS TotalPassengers
           FROM
-            `noble-airport-412610.shashank.titanic_data`
+            {PROJECT_ID}.{STAGING_DATASET}.titanic_data
           GROUP BY
             Gender
         ),
@@ -160,7 +160,7 @@ visualization_query_task = BigQueryExecuteQueryOperator(
             Survival_Status,
             COUNT(*) AS PassengerCount
           FROM
-            `noble-airport-412610.shashank.titanic_data`
+            {PROJECT_ID}.{STAGING_DATASET}.titanic_data
           GROUP BY
             Ticket_Class, Survival_Status
         ),
@@ -170,7 +170,7 @@ visualization_query_task = BigQueryExecuteQueryOperator(
             Passenger_Age,
             COUNT(*) AS PassengerCount
           FROM
-            `noble-airport-412610.shashank.titanic_data`
+            {PROJECT_ID}.{STAGING_DATASET}.titanic_data
           WHERE
             Passenger_Age IS NOT NULL
           GROUP BY
@@ -183,7 +183,7 @@ visualization_query_task = BigQueryExecuteQueryOperator(
             Survival_Status,
             COUNT(*) AS PassengerCount
           FROM
-            `noble-airport-412610.shashank.titanic_data`
+            {PROJECT_ID}.{STAGING_DATASET}.titanic_data
           GROUP BY
             Gender, Survival_Status
         )
