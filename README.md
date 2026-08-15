@@ -1,51 +1,44 @@
-⚡ **Data Engineering with Kafka, Airflow & GCP – Real-time Data Pipeline**  
+# Real-Time Data Pipeline — Kafka + Airflow + GCP
 
-This project is a **real-time data pipeline** built using **Apache Kafka, Apache Airflow, and Google Cloud Platform (GCP)** to **ingest, transform, and process data efficiently**.  
-It showcases how to handle **both batch and real-time streaming data** using **BigQuery for structured storage and analytics**.
+**End-to-end streaming data pipeline that ingests, transforms, and serves data continuously — not in overnight batch jobs.**
 
----
+## The Problem
 
-## 🔹 **What This Project Covers**
-✔ **Ingested Titanic dataset into Google Cloud Storage (GCS)** for structured storage.  
-✔ **Loaded raw data into Google BigQuery** for analytics and processing.  
-✔ **Automated ETL workflows with Apache Airflow** to manage data extraction, transformation, and loading.  
-✔ **Simulated real-time data streaming using Apache Kafka**, publishing Titanic passenger events.  
-✔ **Transformed and validated data using Python & Pandas**, ensuring clean, high-quality insights.  
-✔ **Built interactive dashboards in Looker Studio** to visualize survival trends, demographics, and ticket pricing.  
+Batch ETL pipelines create reporting delays. Dashboards refresh once a day, decisions are based on yesterday's data, and operational teams can't react to what's happening now. Real-time pipelines close that gap.
 
----
+## What This Does
 
-## 🔹 **How It Works (Step-by-Step)**  
+Demonstrates a production-grade streaming architecture:
 
-1️⃣ Data Ingestion & Storage** 
+```
+Data source → Kafka (streaming) → Airflow (orchestration) → GCS → BigQuery → Looker Studio
+```
 
-2️⃣ Data Processing with Airflow**  
+A 7-task Airflow DAG handles ingestion, cleaning, transformation, statistics, and validation — with branching logic for pass/fail quality checks. Kafka runs parallel for real-time event streaming into BigQuery.
 
-3️⃣ Real-Time Data Streaming with Kafka**  
+## Architecture
 
-4️⃣ Data Warehouse & Analytics**  
+| Layer | Tool | Role |
+|-------|------|------|
+| Streaming | Apache Kafka | Producer/consumer event streaming |
+| Orchestration | Apache Airflow | DAG-based ETL pipeline (7 tasks) |
+| Storage | Google Cloud Storage | Raw data landing zone |
+| Warehouse | Google BigQuery | Structured analytics tables |
+| Infrastructure | Terraform | VPC, subnet, NAT, compute instance |
+| Visualisation | Looker Studio | Dashboards from BigQuery |
 
----
+## Key Features
 
-## 📊 **Insights & Visualizations**
-✅ **Survival trends** by gender, class, and age (**e.g., women & first-class passengers had higher survival rates**).  
-✅ **Demographic breakdown of passengers** (**e.g., majority were from third-class**).  
-✅ **Ticket pricing vs. survival rate analysis** (**e.g., higher ticket prices correlated with better survival rates**).  
+- **Airflow DAG** with 7 chained tasks: ingest → clean → rename → stats → aggregation query → validation → branch
+- **BigQuery validation** — automatic row-count check with pass/fail branching
+- **Complex SQL** — 4 CTEs for gender, survival-by-class, age distribution, survival-by-gender aggregations
+- **Terraform IaC** — full GCP infrastructure (VPC, private subnet, Cloud Router, NAT, compute instance)
+- **Kafka streaming** — parallel real-time ingestion alongside batch pipeline
 
----
+## Tech Stack
 
-## **📌 Key Technologies Used**
-🚀 **Apache Kafka** – Real-time event streaming for scalable data pipelines.  
-🚀 **Apache Airflow** – ETL automation & workflow scheduling.  
-🚀 **Google Cloud Storage (GCS)** – Cloud-based structured storage.  
-🚀 **Google BigQuery** – Data warehousing & analytics.  
-🚀 **Terraform** – Infrastructure as Code (IaC) for scalable cloud setup.  
-🚀 **Python (Pandas, SQLAlchemy, Google Cloud SDK)** – Data transformation & validation.  
-🚀 **Looker Studio (Google Data Studio)** – Interactive data visualization & dashboards.  
+Python · Apache Kafka · Apache Airflow · Google Cloud Platform (GCS, BigQuery) · Terraform · Looker Studio
 
----
+## About
 
-## **📌 Why This Project Matters**
-This project replicates **real-world enterprise data engineering** by implementing an **end-to-end pipeline** for **real-time and batch data processing**.  
-It showcases a complete **data ingestion, transformation, storage, and visualization workflow**, applicable to **finance, e-commerce, and operational analytics**.  
-
+Built by Dhruv Kumar — Business Analyst, Berlin.
