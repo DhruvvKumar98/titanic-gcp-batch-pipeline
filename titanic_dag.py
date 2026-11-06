@@ -1,19 +1,17 @@
-# Import necessary libraries
-from airflow import models
-from airflow import DAG
-import airflow
-from datetime import datetime, timedelta
-from airflow.contrib.operators.dataflow_operator import DataFlowPythonOperator
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.providers.google.cloud.transfers.local_to_gcs import LocalFilesystemToGCSOperator
 import os
-from airflow.operators.bash import BashOperator
-from google.cloud import storage, bigquery
+from datetime import timedelta
+
+import airflow
 import pandas as pd
+from airflow import DAG
+from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryCheckOperator,
+    BigQueryExecuteQueryOperator,
+)
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
-from airflow.providers.google.cloud.operators.bigquery import BigQueryExecuteQueryOperator
-from airflow.providers.google.cloud.operators.bigquery import BigQueryCheckOperator
+from google.cloud import bigquery
 
 
 # Default args_
@@ -42,7 +40,7 @@ dag = DAG(
 )
 
 # Tasks
-start = DummyOperator(
+start = EmptyOperator(
     task_id="start_task_id",
     dag=dag
 )
@@ -273,7 +271,7 @@ data_validation_fail = PythonOperator(
     python_callable=_data_validation_fail,
     dag=dag,
 )
-end = DummyOperator(
+end = EmptyOperator(
     task_id="end_task_id",
     dag=dag
 )

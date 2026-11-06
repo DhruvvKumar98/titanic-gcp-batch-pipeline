@@ -1,44 +1,46 @@
-# Real-Time Data Pipeline — Kafka + Airflow + GCP
+# Titanic GCP Batch Pipeline
 
-**End-to-end streaming data pipeline that ingests, transforms, and serves data continuously — not in overnight batch jobs.**
-
-## The Problem
-
-Batch ETL pipelines create reporting delays. Dashboards refresh once a day, decisions are based on yesterday's data, and operational teams can't react to what's happening now. Real-time pipelines close that gap.
+**Airflow DAG that ingests Titanic CSV data into BigQuery, cleans and transforms it, computes statistics, and validates the result — with Terraform-managed GCP infrastructure.**
 
 ## What This Does
 
-Demonstrates a production-grade streaming architecture:
+A 7-task Airflow DAG processes the Titanic dataset through a batch pipeline:
 
 ```
-Data source → Kafka (streaming) → Airflow (orchestration) → GCS → BigQuery → Looker Studio
+GCS (CSV) → BigQuery (raw) → clean → rename columns → statistics → aggregation queries → validation (pass/fail branch)
 ```
 
-A 7-task Airflow DAG handles ingestion, cleaning, transformation, statistics, and validation — with branching logic for pass/fail quality checks. Kafka runs parallel for real-time event streaming into BigQuery.
+The infrastructure (VPC, subnet, NAT, compute instance) is defined as Terraform IaC.
 
 ## Architecture
 
 | Layer | Tool | Role |
 |-------|------|------|
-| Streaming | Apache Kafka | Producer/consumer event streaming |
-| Orchestration | Apache Airflow | DAG-based ETL pipeline (7 tasks) |
-| Storage | Google Cloud Storage | Raw data landing zone |
+| Orchestration | Apache Airflow | DAG-based batch pipeline (7 tasks) |
+| Storage | Google Cloud Storage | CSV landing zone |
 | Warehouse | Google BigQuery | Structured analytics tables |
-| Infrastructure | Terraform | VPC, subnet, NAT, compute instance |
-| Visualisation | Looker Studio | Dashboards from BigQuery |
+| Infrastructure | Terraform | VPC, subnet, Cloud Router, NAT, compute instance |
 
-## Key Features
+## DAG Tasks
 
-- **Airflow DAG** with 7 chained tasks: ingest → clean → rename → stats → aggregation query → validation → branch
-- **BigQuery validation** — automatic row-count check with pass/fail branching
-- **Complex SQL** — 4 CTEs for gender, survival-by-class, age distribution, survival-by-gender aggregations
-- **Terraform IaC** — full GCP infrastructure (VPC, private subnet, Cloud Router, NAT, compute instance)
-- **Kafka streaming** — parallel real-time ingestion alongside batch pipeline
+1. **Ingest** — `GCSToBigQueryOperator` loads CSV from GCS
+2. **Clean** — removes duplicate rows
+3. **Rename** — standardises column names, casts types
+4. **Statistics** — `df.describe()` → BigQuery table
+5. **Aggregation** — 4 CTEs: gender counts, survival by class, age distribution, survival by gender
+6. **Validation** — `BigQueryCheckOperator` row-count check
+7. **Branch** — pass/fail paths after validation
+
+## Prerequisites
+
+- GCP project with BigQuery and GCS enabled
+- Apache Airflow 2.x environment (Cloud Composer or self-hosted)
+- Terraform for infrastructure provisioning
 
 ## Tech Stack
 
-Python · Apache Kafka · Apache Airflow · Google Cloud Platform (GCS, BigQuery) · Terraform · Looker Studio
+Python · Apache Airflow · Google Cloud Platform (GCS, BigQuery) · Terraform
 
-## About
+## Data
 
-Built by Dhruv Kumar — Business Analyst, Berlin.
+Uses the [Titanic dataset](https://www.kaggle.com/c/titanic) — this is an architecture demo, not a production data source.
